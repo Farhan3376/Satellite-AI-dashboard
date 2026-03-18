@@ -40,8 +40,8 @@ def load_feature_index(features_dir, dataset_path):
             continue
 
         # Load the normalized feature matrix and encoded labels
-        X = np.load(X_path)
-        y = np.load(y_path)
+        X = np.load(X_path, allow_pickle=True)
+        y = np.load(y_path, allow_pickle=True)
         all_features.append(X)
         all_labels.append(y)
 
