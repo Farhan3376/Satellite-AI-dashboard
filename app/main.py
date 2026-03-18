@@ -73,24 +73,55 @@ def startup_event():
     global SCALER, ENCODER, RF_MODEL, SVM_MODEL, PCA_TRANSFORMER, FEATURE_MATRIX, LABEL_ARRAY, ALL_PATHS
     
     try:
-        logger.info("Initializing Intelligence System...")
+        logger.info(f"Initializing Intelligence System. Working Dir: {os.getcwd()} | ROOT_DIR: {ROOT_DIR}")
+        
+        # 0. Check File Integrity
+        required_files = [
+            ("scaler.joblib", "SCALER"),
+            ("encoder.joblib", "ENCODER"),
+            ("rf_model.joblib", "RF_MODEL"),
+            ("pca_transformer.joblib", "PCA_TRANSFORMER")
+        ]
+        
+        missing = []
+        for filename, var_name in required_files:
+            p = os.path.join(MODELS_DIR, filename)
+            if not os.path.exists(p):
+                missing.append(filename)
+            else:
+                logger.info(f"Found required file: {filename} ({os.path.getsize(p)} bytes)")
+        
+        if missing:
+            error_msg = f"CRITICAL: Missing required model files in {MODELS_DIR}: {', '.join(missing)}"
+            logger.error(error_msg)
+            # Log what IS there to help debug
+            if os.path.exists(MODELS_DIR):
+                logger.info(f"Existing files in {MODELS_DIR}: {os.listdir(MODELS_DIR)}")
+            else:
+                logger.info(f"MODELS_DIR does not exist: {MODELS_DIR}")
+            raise FileNotFoundError(error_msg)
+
+        # 1. Load Components
         SCALER = joblib.load(os.path.join(MODELS_DIR, "scaler.joblib"))
         ENCODER = joblib.load(os.path.join(MODELS_DIR, "encoder.joblib"))
         RF_MODEL = joblib.load(os.path.join(MODELS_DIR, "rf_model.joblib"))
-        # SVM_MODEL = joblib.load(os.path.join(MODELS_DIR, "svm_model.joblib")) # Excluded due to size
         PCA_TRANSFORMER = joblib.load(os.path.join(MODELS_DIR, "pca_transformer.joblib"))
         
-        # Load all 24k features into memory from the centralized models directory
+        # 2. Load Similarity Index
+        # load_feature_index returns (matrix, labels, paths)
         FEATURE_MATRIX, LABEL_ARRAY, ALL_PATHS = load_feature_index(MODELS_DIR, DATASET_PATH)
         
-        # Ensure directory for uploads exists
+        # Ensure directories exist
         os.makedirs(os.path.join(ROOT_DIR, "uploads"), exist_ok=True)
         
-        # Initialize DB Tables
+        # 3. Initialize DB
         create_tables()
         logger.info("Intelligence System Ready.")
+        
     except Exception as e:
         logger.error(f"Startup Critical Failure: {str(e)}")
+        # Re-raise so Railway/Deployment logs show the failure immediately
+        raise e
 
 # ---------------------------------------------------------------------------
 # Pydantic Models
