@@ -18,9 +18,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------
 # Configuration (Local vs Cloud)
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------
 # In production (Streamlit Cloud), set API_URL in secrets
 API_URL_RAW = os.getenv("API_URL", "http://localhost:8000")
 
