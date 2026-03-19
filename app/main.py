@@ -82,7 +82,8 @@ def startup_event():
             ("rf_model.joblib", "RF_MODEL"),
             ("pca_transformer.joblib", "PCA_TRANSFORMER"),
             ("X_train_v2.npy", "FEATURES"),
-            ("y_train_v2.npy", "LABELS")
+            ("y_train_v2.npy", "LABELS"),
+            ("paths_v2.npy", "PATHS")
         ]
         
         missing = []

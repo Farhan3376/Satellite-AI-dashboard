@@ -26,27 +26,19 @@ def load_feature_index(features_dir, dataset_path):
     Returns:
         tuple: (all_features: np.ndarray, all_labels: np.ndarray, all_paths: list)
     """
-    # 1. Load the binary features and labels
+    # 1. Load the binary features, labels, and relative paths
     X_path = os.path.join(features_dir, "X_train_v2.npy")
     y_path = os.path.join(features_dir, "y_train_v2.npy")
+    p_path = os.path.join(features_dir, "paths_v2.npy")
     
     X = np.load(X_path, allow_pickle=True)
     y = np.load(y_path, allow_pickle=True)
+    relative_paths = np.load(p_path, allow_pickle=True)
     
-    # 2. Rebuild the original image paths (for display)
-    # We reconstruct paths from the dataset structure
-    all_paths = []
-    for split in ['train', 'val', 'test']:
-        split_dir = os.path.join(dataset_path, split)
-        if not os.path.exists(split_dir):
-            continue
-        for class_name in sorted(os.listdir(split_dir)):
-            class_dir = os.path.join(split_dir, class_name)
-            if not os.path.isdir(class_dir):
-                continue
-            for filename in sorted(os.listdir(class_dir)):
-                if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    all_paths.append(os.path.join(class_dir, filename))
+    # 2. Rebuild the absolute image paths for the current environment
+    all_paths = [os.path.join(dataset_path, p) for p in relative_paths]
+    
+    return X, y, all_paths
     
     return X, y, all_paths
 
