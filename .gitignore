@@ -9,6 +9,7 @@ processed_dataset/
 features_output/
 uploads/
 models/svm_model.joblib
+Models/svm_model.joblib
 *.db
 similarity_results.png
 sample_prediction.png
