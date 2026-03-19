@@ -17,36 +17,29 @@ except ImportError:
 
 def load_feature_index(features_dir, dataset_path):
     """
-    Loads the precomputed feature matrix for all images along with their metadata.
-    Combines features from train, val, and test splits to enable search across the
-    entire dataset.
-
+    Loads the precomputed feature matrix consolidated for search.
+    
     Args:
-        features_dir (str): Path to the features_output folder from Step 2.
+        features_dir (str): Path to the folder containing model files.
         dataset_path (str): Path to the structured dataset root folder.
-
+        
     Returns:
         tuple: (all_features: np.ndarray, all_labels: np.ndarray, all_paths: list)
     """
-    all_features = []
-    all_labels = []
+    # 1. Load the binary features and labels
+    X_path = os.path.join(features_dir, "X_train_v2.npy")
+    y_path = os.path.join(features_dir, "y_train_v2.npy")
+    
+    X = np.load(X_path, allow_pickle=True)
+    y = np.load(y_path, allow_pickle=True)
+    
+    # 2. Rebuild the original image paths (for display)
+    # We reconstruct paths from the dataset structure
     all_paths = []
-
     for split in ['train', 'val', 'test']:
-        X_path = os.path.join(features_dir, f"X_{split}.npy")
-        y_path = os.path.join(features_dir, f"y_{split}.npy")
-
-        if not os.path.exists(X_path):
-            continue
-
-        # Load the normalized feature matrix and encoded labels
-        X = np.load(X_path, allow_pickle=True)
-        y = np.load(y_path, allow_pickle=True)
-        all_features.append(X)
-        all_labels.append(y)
-
-        # Rebuild the original image paths from the dataset directory structure
         split_dir = os.path.join(dataset_path, split)
+        if not os.path.exists(split_dir):
+            continue
         for class_name in sorted(os.listdir(split_dir)):
             class_dir = os.path.join(split_dir, class_name)
             if not os.path.isdir(class_dir):
@@ -54,11 +47,8 @@ def load_feature_index(features_dir, dataset_path):
             for filename in sorted(os.listdir(class_dir)):
                 if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
                     all_paths.append(os.path.join(class_dir, filename))
-
-    feature_matrix = np.vstack(all_features)
-    label_array = np.concatenate(all_labels)
-
-    return feature_matrix, label_array, all_paths
+    
+    return X, y, all_paths
 
 # ---------------------------------------------------------------------------
 # Similarity Search
